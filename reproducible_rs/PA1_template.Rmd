@@ -45,6 +45,7 @@ After I finish downloading and unzipping the data, I'll load the data naming act
 
 ```{r echo=TRUE}
 act1 <- read.csv("./data/activity.csv")
+act1$date <- as.Date(act1$date,"%Y-%m-%d")
 ```
 
 Making a dataset that has no missing values just in case.
@@ -53,7 +54,7 @@ Making a dataset that has no missing values just in case.
 na_act <- act1[complete.cases(act1),]
 ```
 
- - **Question 1**. What is the mean total number of steps taken per day.
+ - **Question 1**. **What is the mean total number of steps taken per day.**
  
  1. Calculate the total number of steps taken per day
  
@@ -88,7 +89,7 @@ print(paste("Median of total number of steps taken per day is ",median(total_dbd
 ```
 
 
-- **Question 2**. What is the average daily activity pattern?
+- **Question 2**. **What is the average daily activity pattern?**
 
 1. Make a time series plot(i.e type = "l")of the 5-minute interval(x-axis) and the average number of steps taken, averaged across all days(y-axis)
 
@@ -182,7 +183,7 @@ with(act_day,hist(steps,xlab="dates",
 ```
 
 
-- **Question 4**. Are there differences in activity patterns between weekdays and weekends?
+- **Question 4**. **Are there differences in activity patterns between weekdays and weekends?**
 
 For this part, use the dataset with the filled-in missing values for this part. 
 
@@ -191,3 +192,48 @@ For this part, use the dataset with the filled-in missing values for this part.
 2. Make a panel plot containing a time series plot(i.e **type = "l"**) of the 5-minute interval(x-axis) and the average number of steps taken, averaged across all weekday days or weekend days(y-axis). See the README file in the Github repository to see an example of what this plot should look like using simulated data. 
 
 
+Instead of using a new factor variable, I used a data frame to store the weekend and weekday data. If I use factor variable to handle this question, using ggplot will make the better graphic. But I did not choose to do it that way. 
+
+First, I made a data set that contains the observation whether it's weekdays.
+
+```{r echo=TRUE}
+weekdays2 <- weekdays(act1[,2])
+
+
+act4 <- cbind(act1,weekdays = weekdays2)
+```
+
+
+Then I made two empty data frames to store the weekday data and weekend data. I used for loop to separate the observations. I saved the Weekday observations in the wd_act data frame and weekend observations in the weeknd_act data frame. 
+
+```{r echo=TRUE}
+wd_act <- data.frame()
+weeknd_act <- data.frame()
+
+for(i in 1:nrow(act4)){
+  if(act4[i,4]== "토요일" | act4[i,4] == "일요일"){
+    weeknd_act <- rbind(weeknd_act,act4[i,])
+  }
+  else {
+    wd_act <- rbind(wd_act,act4[i,])
+  }
+}
+```
+
+To compare the weekend data and weekday data, I used the par function to see both plots on one screen. 
+
+```{r echo=TRUE}
+wd_act1 <- aggregate(steps~interval,wd_act,mean)
+
+weeknd_act1 <- aggregate(steps~interval,weeknd_act,mean)
+
+par(mfrow = c(2,1))
+
+with(wd_act1,plot(steps~interval,type="l", xlab="Interval", ylab="Average steps", ylim=c(0,250), main = "Comparison between Weekdays and Weekend"))
+
+with(weeknd_act1,plot(steps~interval,type="l", xlab="Interval", ylab="Average steps", ylim=c(0,250)))
+```
+
+
+
+The top is the weekday plot and the bottom is the weekend plot.
